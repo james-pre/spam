@@ -1,0 +1,33 @@
+{
+	"name": "spam",
+	"version": "0.0.1",
+	"description": "Source and Package Administration/Management",
+	"bin": {
+		"spam": "./dist/main.js"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/james-pre/spam.git"
+	},
+	"keywords": [
+		"utility"
+	],
+	"type": "module",
+	"author": "James Prevett <jp@jamespre.dev>",
+	"license": "GPL-3.0-or-later",
+	"bugs": {
+		"url": "https://github.com/james-pre/spam/issues"
+	},
+	"homepage": "https://github.com/james-pre/spam#readme",
+	"devDependencies": {
+		"@commander-js/extra-typings": "^14.0.0",
+		"@types/node": "^25.5.2",
+		"prettier": "^3.6.2",
+		"typescript": "^6.0.0"
+	},
+	"dependencies": {
+		"commander": "^14.0.0",
+		"ioium": "^0.1.0",
+		"zod": "^4.3.6"
+	}
+}
