@@ -27,6 +27,7 @@ cli.hook('preAction', () => {
 });
 
 cli.command('list')
+	.alias('ls')
 	.description('List all managed repositories')
 	.action(() => {
 		for (const dir of config.dirs) {
@@ -65,6 +66,7 @@ cli.command('add')
 
 cli.command('remove')
 	.alias('rm')
+	.option('-m, --missing', 'Remove repositories that no longer exist locally')
 	.argument('<paths...>', 'Paths to remove')
 	.description('Remove repositories')
 	.action(function spam_git_rm(paths: string[]) {
@@ -77,6 +79,14 @@ cli.command('remove')
 			}
 			config.dirs.splice(index, 1);
 			console.log(styleText('red', '- ' + prettyPath(path)));
+		}
+		for (let i = 0; i < config.dirs.length; i++) {
+			if (!opts.missing) break;
+			const dir = config.dirs[i];
+			if (fs.existsSync(dir)) continue;
+			config.dirs.splice(i, 1);
+			console.log(styleText('red', '- ' + prettyPath(dir)));
+			i--;
 		}
 		saveConfig(opts.config);
 	});
