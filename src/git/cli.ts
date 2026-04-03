@@ -85,7 +85,7 @@ cli.command('remove')
 			const dir = config.dirs[i];
 			if (fs.existsSync(dir)) continue;
 			config.dirs.splice(i, 1);
-			console.log(styleText('red', '- ' + prettyPath(dir)));
+			console.log(styleText('red', '- ' + prettyPath(dir) + ' (missing)'));
 			i--;
 		}
 		saveConfig(opts.config);
