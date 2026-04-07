@@ -67,7 +67,7 @@ cli.command('add')
 cli.command('remove')
 	.alias('rm')
 	.option('-m, --missing', 'Remove repositories that no longer exist locally')
-	.argument('<paths...>', 'Paths to remove')
+	.argument('[paths...]', 'Paths to remove')
 	.description('Remove repositories')
 	.action(function spam_git_rm(paths: string[]) {
 		const opts = this.optsWithGlobals();
