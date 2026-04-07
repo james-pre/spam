@@ -27,7 +27,7 @@
 	},
 	"dependencies": {
 		"commander": "^14.0.0",
-		"ioium": "^0.1.0",
+		"ioium": "^1.0.0",
 		"zod": "^4.3.6"
 	}
 }
