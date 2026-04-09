@@ -18,6 +18,10 @@
 	"bugs": {
 		"url": "https://github.com/james-pre/spam/issues"
 	},
+	"files": [
+		"dist",
+		"LICENSE.md"
+	],
 	"homepage": "https://github.com/james-pre/spam#readme",
 	"devDependencies": {
 		"@commander-js/extra-typings": "^14.0.0",
@@ -29,5 +33,14 @@
 		"commander": "^14.0.0",
 		"ioium": "^1.0.0",
 		"zod": "^4.3.6"
+	},
+	"prettier": {
+		"singleQuote": true,
+		"useTabs": true,
+		"trailingComma": "es5",
+		"tabWidth": 4,
+		"printWidth": 140,
+		"arrowParens": "avoid",
+		"experimentalOperatorPosition": "start"
 	}
 }
