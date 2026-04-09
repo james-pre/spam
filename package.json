@@ -1,5 +1,5 @@
 {
-	"name": "spam",
+	"name": "spam-cli",
 	"version": "0.0.1",
 	"description": "Source and Package Administration/Management",
 	"bin": {
