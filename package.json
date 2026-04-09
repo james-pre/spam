@@ -22,6 +22,9 @@
 		"dist",
 		"LICENSE.md"
 	],
+	"scripts": {
+		"prepublishOnly": "tsc -b"
+	},
 	"homepage": "https://github.com/james-pre/spam#readme",
 	"devDependencies": {
 		"@commander-js/extra-typings": "^14.0.0",
