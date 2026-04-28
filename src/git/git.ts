@@ -1,6 +1,6 @@
 import * as io from 'ioium/node';
 import { styleText } from 'node:util';
-import { config } from './config.js';
+import { config } from '../config.js';
 import { prettyPath } from './utils.js';
 
 export interface GitOptions {
@@ -13,7 +13,7 @@ export interface GitOptions {
 }
 
 export async function runGit(options: GitOptions) {
-	if (!config.dirs.length) {
+	if (!config.src_dirs.length) {
 		io.warn('No repositories configured.');
 		return;
 	}
@@ -21,7 +21,7 @@ export async function runGit(options: GitOptions) {
 	options.opName ??= options.args[0];
 	options.opIng ??= options.opName[0].toUpperCase() + options.opName.slice(1) + 'ing';
 
-	console.log(options.opIng, styleText('blueBright', config.dirs.length.toString()), 'repositories...');
+	console.log(options.opIng, styleText('blueBright', config.src_dirs.length.toString()), 'repositories...');
 
 	const { failed, noJobs } = await io.jobs.runCommands(
 		{
@@ -59,7 +59,7 @@ export async function runGit(options: GitOptions) {
 				return status || line;
 			},
 		},
-		config.dirs.map(dir => ({
+		config.src_dirs.map(dir => ({
 			argv: ['git', '-C', dir, ...options.args],
 			name: prettyPath(dir),
 		}))

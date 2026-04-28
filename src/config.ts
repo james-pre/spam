@@ -4,11 +4,11 @@ import * as z from 'zod';
 import * as io from 'ioium/node';
 import * as fs from 'node:fs';
 
-export const defaultConfigPath = join(process.env.XDG_CONFIG_HOME || join(homedir(), '.config'), 'sourcectl.json');
-if (!fs.existsSync(defaultConfigPath)) fs.writeFileSync(defaultConfigPath, '{ "dirs": [] }');
+export const defaultConfigPath = join(process.env.XDG_CONFIG_HOME || join(homedir(), '.config'), 'spam.json');
+if (!fs.existsSync(defaultConfigPath)) fs.writeFileSync(defaultConfigPath, '{ "src_dirs": [] }');
 
 const Config = z.looseObject({
-	dirs: z.string().array(),
+	src_dirs: z.string().array(),
 });
 
 export let config: z.infer<typeof Config>;
