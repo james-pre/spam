@@ -1,10 +1,11 @@
 import * as io from 'ioium/node';
 import { styleText } from 'node:util';
 import { config } from '../config.js';
-import { prettyPath } from './utils.js';
+import { prettyPath } from './paths.js';
+import type { SCM } from './repo.js';
 
-export interface GitOptions {
-	args: string[];
+export interface ScmOptions {
+	args: Record<SCM, string[]>;
 	opName?: string;
 	opIng?: string;
 	jobSuccess?: string;
@@ -12,16 +13,16 @@ export interface GitOptions {
 	concurrency: number;
 }
 
-export async function runGit(options: GitOptions) {
-	if (!config.src_dirs.length) {
+export async function runSCM(options: ScmOptions) {
+	if (!config.repos.length) {
 		io.warn('No repositories configured.');
 		return;
 	}
 
-	options.opName ??= options.args[0];
+	options.opName ??= options.args.git[0];
 	options.opIng ??= options.opName[0].toUpperCase() + options.opName.slice(1) + 'ing';
 
-	console.log(options.opIng, styleText('blueBright', config.src_dirs.length.toString()), 'repositories...');
+	console.log(options.opIng, styleText('blueBright', config.repos.length.toString()), 'repositories...');
 
 	const { failed, noJobs } = await io.jobs.runCommands(
 		{
@@ -59,9 +60,14 @@ export async function runGit(options: GitOptions) {
 				return status || line;
 			},
 		},
-		config.src_dirs.map(dir => ({
-			argv: ['git', '-C', dir, ...options.args],
-			name: prettyPath(dir),
+		config.repos.map(repo => ({
+			argv:
+				repo.scm == 'git'
+					? ['git', '-C', repo.path, ...options.args.git]
+					: (() => {
+							throw new Error('Unsupported SCM: ' + repo.scm);
+						})(),
+			name: prettyPath(repo.path),
 		}))
 	);
 
