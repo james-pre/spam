@@ -3,12 +3,12 @@ import * as fs from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 import * as z from 'zod';
-import { Repository } from './scm/repo.js';
+import { SourceRepository } from './scm/repo.js';
 
 export const defaultConfigPath = join(process.env.XDG_CONFIG_HOME || join(homedir(), '.config'), 'spam.json');
 
 const Config = z.looseObject({
-	repos: Repository.array().default([]),
+	repos: SourceRepository.array().default([]),
 });
 
 if (!fs.existsSync(defaultConfigPath)) io.writeJSON(defaultConfigPath, Config.parse({}));

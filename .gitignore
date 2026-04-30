@@ -2,3 +2,8 @@ node_modules
 tmp
 dist
 *.tsbuildinfo
+.*
+!.github
+!.vscode
+!.gitignore
+!.prettierignore

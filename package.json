@@ -33,8 +33,11 @@
 		"typescript": "^6.0.0"
 	},
 	"dependencies": {
+		"@types/semver": "^7.7.1",
 		"commander": "^14.0.0",
 		"ioium": "^1.0.0",
+		"libdnf": "^0.2.3",
+		"semver": "^7.7.4",
 		"zod": "^4.3.6"
 	},
 	"prettier": {

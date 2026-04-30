@@ -22,7 +22,7 @@ export function* createGraph(lock: PackageLock, options: CreateGraphOptions): Ge
 
 	function display_name(name: string, version: string) {
 		name ||= lock.name;
-		return JSON.stringify(options.includeVersions ? `${name}@${version}` : name);
+		return JSON.stringify(options.includeVersions && version ? `${name}@${version}` : name);
 	}
 
 	function* add_dependencies(display: string, dependencies: Record<string, string> = {}, attributes = ''): Generator<string> {
@@ -52,7 +52,7 @@ export function* createGraph(lock: PackageLock, options: CreateGraphOptions): Ge
 	}
 
 	// Start with the root package
-	yield* add_package('', lock.version);
+	yield* add_package('', lock.version || '');
 
 	yield '}\n';
 }

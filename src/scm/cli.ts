@@ -6,7 +6,7 @@ import spam from '../cli.js';
 import { config, saveConfig } from '../config.js';
 import { prettyPath, resolvePaths } from './paths.js';
 import { runSCM } from './scm.js';
-import { formatRepo, resolveRepos, type PackageManager } from './repo.js';
+import { formatSourceRepo, resolveSourceRepos, shortSourceRepoString, type SCMPackageManager } from './repo.js';
 
 const scm = spam
 	.command('scm')
@@ -26,8 +26,8 @@ scm.command('info')
 	.description('Show information about managed repositories')
 	.argument('<repos...>', 'Repo names or paths')
 	.action(function spam_git_info(repos) {
-		for (const repo of resolveRepos(repos)) {
-			console.log(formatRepo(repo));
+		for (const repo of resolveSourceRepos(repos)) {
+			console.log(formatSourceRepo(repo));
 		}
 	});
 
@@ -70,12 +70,12 @@ scm.command('add')
 				continue;
 			}
 
-			const packages: PackageManager[] = [];
+			const packages: SCMPackageManager[] = [];
 
 			if (dir.includes('package.json')) packages.push('npm');
 			if (dir.includes('yarn.lock')) packages.push('yarn');
 
-			config.repos.push({ path: resolve(path), scm: 'git', packages, name: basename(path) });
+			config.repos.push({ path: resolve(path), scm: 'git', packageManagers: packages, name: basename(path) });
 			console.log(styleText('green', '+ ' + prettyPath(path)));
 		}
 		saveConfig(opts.config);
@@ -85,9 +85,7 @@ scm.command('list')
 	.alias('ls')
 	.description('List all managed repositories')
 	.action(() => {
-		for (const { path, scm } of config.repos) {
-			console.log(styleText(scm == 'git' ? 'green' : 'red', scm), prettyPath(path));
-		}
+		for (const repo of config.repos) console.log(...shortSourceRepoString(repo));
 	});
 
 scm.command('remove')
@@ -98,7 +96,7 @@ scm.command('remove')
 	.description('Remove repositories')
 	.action(function spam_git_rm(paths: string[]) {
 		const opts = this.optsWithGlobals();
-		for (const repo of resolveRepos(paths, opts.recursive)) {
+		for (const repo of resolveSourceRepos(paths, opts.recursive)) {
 			const index = config.repos.indexOf(repo);
 			if (index === -1) io.exit('Bug! Could not resolve repo index');
 			config.repos.splice(index, 1);

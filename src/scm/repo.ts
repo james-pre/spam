@@ -1,26 +1,31 @@
+import * as io from 'ioium/node';
+import { basename, join, relative, resolve } from 'node:path';
+import { styleText } from 'node:util';
 import * as z from 'zod';
 import { config } from '../config.js';
-import { relative, resolve } from 'node:path';
+import * as npm from '../npm/index.js';
 import { prettyPath } from './paths.js';
-import { styleText } from 'node:util';
+import type { Dependency } from '../dependency.js';
+import semver from 'semver';
+import { existsSync } from 'node:fs';
 
-export const supportSCM = ['git'] as const;
+export const scmTools = ['git'] as const;
 
-export type SCM = (typeof supportSCM)[number];
+export type SCM = (typeof scmTools)[number];
 
-export const supportedPackageManagers = ['npm', 'yarn'] as const;
+export const scmPackageManagers = ['npm', 'yarn'] as const;
 
-export type PackageManager = (typeof supportedPackageManagers)[number];
+export type SCMPackageManager = (typeof scmPackageManagers)[number];
 
-export const Repository = z.object({
+export const SourceRepository = z.object({
 	path: z.string(),
 	name: z.string().nullish(),
-	scm: z.literal(supportSCM),
-	packages: z.literal(supportedPackageManagers).array(),
+	scm: z.literal(scmTools),
+	packageManagers: z.literal(scmPackageManagers).array(),
 });
-export interface Repository extends z.infer<typeof Repository> {}
+export interface SourceRepository extends z.infer<typeof SourceRepository> {}
 
-export function* resolveRepos(args: string[], recursive: boolean = false): Generator<Repository> {
+export function* resolveSourceRepos(args: string[], recursive: boolean = false): Generator<SourceRepository> {
 	const resolved = args.map(a => [a, resolve(a)]);
 	repo_iter: for (const repo of config.repos) {
 		for (const [arg, path] of resolved) {
@@ -32,10 +37,29 @@ export function* resolveRepos(args: string[], recursive: boolean = false): Gener
 	}
 }
 
-export function formatRepo(repo: Repository): string {
+export function formatSourceRepo(repo: SourceRepository): string {
 	return `Name             : ${repo.name || styleText('dim', '(unnamed)')}
 			Path             : ${repo.path}
 			Source Control   : ${repo.scm}
-			Package Managers : ${repo.packages.join(', ')}
+			Package Managers : ${repo.packageManagers.join(', ')}
 			`.replaceAll('\t', '');
+}
+
+export function shortSourceRepoString(repo: SourceRepository): string[] {
+	return [styleText(repo.scm == 'git' ? 'green' : 'red', repo.scm), prettyPath(repo.path)];
+}
+
+export function* getSourceRepoDependencies(repo: SourceRepository): Generator<Dependency> {
+	const result: Dependency[] = [];
+
+	for (const pm of repo.packageManagers) {
+		switch (pm) {
+			case 'npm': {
+				if (existsSync(join(repo.path, 'package-lock.json'))) yield* npm.getDependencies(join(repo.path, 'package-lock.json'));
+				break;
+			}
+		}
+	}
+
+	return result;
 }

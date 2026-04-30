@@ -1,4 +1,8 @@
+import * as io from 'ioium/node';
+import { basename } from 'node:path';
+import semver from 'semver';
 import * as z from 'zod';
+import type { Dependency } from '../dependency.js';
 
 export const PackageLockEntry = z
 	.object({
@@ -21,9 +25,30 @@ export interface PackageLockEntry extends z.infer<typeof PackageLockEntry> {}
 
 export const PackageLock = z.object({
 	name: z.string(),
-	version: z.string(),
-	lockfileVersion: z.literal(3),
+	version: z.string().nullish(),
+	lockfileVersion: z.literal([2, 3]),
 	requires: z.boolean().optional(),
 	packages: z.record(z.string(), PackageLockEntry),
 });
 export interface PackageLock extends z.infer<typeof PackageLock> {}
+
+export function* getDependencies(lockFilePath: string): Generator<Dependency> {
+	let lock: PackageLock;
+	try {
+		lock = io.readJSON(lockFilePath, PackageLock);
+	} catch (e) {
+		throw new Error(`Could not parse ${lockFilePath}: ${io.errorText(e)}`);
+	}
+
+	const direct = lock.packages[''].dependencies || {};
+
+	for (const [relPath, pkg] of Object.entries(lock.packages)) {
+		const name = pkg.name || basename(relPath);
+		yield {
+			from: 'npm',
+			name,
+			version: pkg.version || '*',
+			isDirect: name in direct && semver.satisfies(pkg.version || '*', direct[name] || '*'),
+		};
+	}
+}
