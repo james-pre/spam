@@ -11,7 +11,7 @@ export async function* getGlobalDependencies(): AsyncGenerator<Dependency> {
 
 		for (const pkg of await dnf.query('installed'))
 			yield { from: 'dnf', name: pkg.name, version: pkg.evr, isDirect: pkg.reason == 'User' };
-	} finally {
-		// fine, user probably don't have dnf
+	} catch {
+		//  user probably doesn't have dnf
 	}
 }

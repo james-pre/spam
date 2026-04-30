@@ -43,7 +43,7 @@ export function* getDependencies(lockFilePath: string): Generator<Dependency> {
 	const direct = lock.packages[''].dependencies || {};
 
 	for (const [relPath, pkg] of Object.entries(lock.packages)) {
-		const name = pkg.name || basename(relPath);
+		const name = pkg.name || (relPath.includes('node_modules/') ? relPath.split('node_modules/').at(-1)! : basename(relPath));
 		yield {
 			from: 'npm',
 			name,
