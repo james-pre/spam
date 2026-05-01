@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env -S node --experimental-addon-modules
 
 import spam from './cli.js';
 import './npm/cli.js';
