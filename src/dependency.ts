@@ -13,8 +13,10 @@ export function formatDep(dep: Dependency) {
 }
 
 export function formatDepSummary(deps: Iterable<Dependency>, packageManagers?: PackageManagerName[]) {
-	return (Object.entries(Object.groupBy(deps, dep => dep.from)) as [PackageManagerName, Dependency[]][])
-		.filter(([from]) => !packageManagers || packageManagers.includes(from))
-		.map(([from, dependencies]) => `${dependencies.length} ${styleText(pmColors[from], from)}`)
-		.join(', ');
+	return (
+		(Object.entries(Object.groupBy(deps, dep => dep.from)) as [PackageManagerName, Dependency[]][])
+			.filter(([from]) => !packageManagers || packageManagers.includes(from))
+			.map(([from, dependencies]) => `${dependencies.length} ${styleText(pmColors[from], from)}`)
+			.join(', ') || styleText('dim', '(no dependencies)')
+	);
 }
