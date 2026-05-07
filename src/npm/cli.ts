@@ -1,11 +1,11 @@
 import * as io from 'ioium/node';
+import * as fs from 'node:fs';
 import { createWriteStream } from 'node:fs';
+import { styleText } from 'node:util';
 import spam from '../cli.js';
+import * as api from './api.js';
 import { createGraph } from './deps.js';
 import { PackageLock } from './lock.js';
-import { styleText } from 'node:util';
-import * as api from './api.js';
-import * as fs from 'node:fs';
 
 const cli = spam.command('npm').alias('node');
 
@@ -105,15 +105,35 @@ cli.command('stats')
 		const results: api.PackageDownloadInfo[] = [];
 		let time = 0;
 
+		const unscopedNames = opts.package.filter(name => !api.scopedPackageName.test(name));
+		if (!isSinglePackage && unscopedNames.length > 1) {
+			opts.package = opts.package.filter(name => api.scopedPackageName.test(name));
+
+			const start = performance.now();
+			const info = await api
+				.getPackageDownloadsBulk(unscopedNames, onWarning)
+				.catch(e => io.exit(`Error fetching bulk data: ${opts.verbose && e instanceof Error ? e.stack : e}`));
+
+			sum += info.total;
+
+			results.push(...Object.values(info.packages));
+
+			if (!opts.sort) {
+				for (const pkg of Object.values(info.packages)) {
+					_print(pkg);
+				}
+			}
+
+			time += performance.now() - start;
+		}
+
 		for (const name of opts.package) {
 			const start = performance.now();
 			let info: api.PackageDownloadInfo;
 			try {
 				info = await api.getPackageDownloads(name, onWarning);
 			} catch (e) {
-				console.error(
-					styleText('redBright', `Error fetching data for package "${name}": ${opts.verbose && e instanceof Error ? e.stack : e}`)
-				);
+				io.error(`Error fetching data for package "${name}": ${opts.verbose && e instanceof Error ? e.stack : e}`);
 				continue;
 			}
 

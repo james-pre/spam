@@ -15,13 +15,10 @@ const spam = program
 	.option('--debug', 'Enable debug mode')
 	.option('-c, --config <path>', 'Path to config file', defaultConfigPath);
 
-spam.hook('preAction', () => {
-	loadConfig(spam.opts().config);
-});
-
-spam.on('option:debug', debug => {
-	io._setDebugOutput(debug);
-	if (!debug) return;
+spam.hook('preAction', cmd => {
+	const opts = cmd.opts();
+	loadConfig(opts.config);
+	io._setDebugOutput(opts.debug ?? false);
 });
 
 spam.command('pull')
