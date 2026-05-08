@@ -6,6 +6,9 @@ import spam from '../cli.js';
 import * as api from './api.js';
 import { createGraph } from './deps.js';
 import { PackageLock } from './lock.js';
+import * as replicate from './replicate.js';
+
+const num = (n: number) => styleText('blueBright', n.toString());
 
 const cli = spam.command('npm').alias('node');
 
@@ -252,37 +255,42 @@ npm_db
 		else console.log(rev);
 	});
 
+const punctuationRegex = /[-_.]+/g;
+const normalize = (value: string) => value.toLowerCase().replaceAll(punctuationRegex, '');
+
 cli.command('check-name')
 	.argument('[names...]', 'Names to check')
 	.option('-f, --file <path...>', 'Path to a file containing npm package names')
 	.option('-i, --ignore <status...>', 'Status to ignore', [] as string[])
 	.option('--print-only <status>', 'Print only names with the specified status')
 	.option('--debug', 'Enable debug output')
-	.action(async (names, options) => {
+	.action(async (cliNames: string[], options) => {
 		const displayNames = new Map();
 		let maxNameLength = 0;
 
-		for (const [i, name] of names.entries()) {
-			displayNames.set(name.toLowerCase(), name);
-			names[i] = name.toLowerCase();
-			maxNameLength = Math.max(name.length, maxNameLength);
+		function addNames(values: Iterable<string>) {
+			for (const displayName of values) {
+				let name = displayName.toLowerCase();
+				displayNames.set(name, displayName);
+				maxNameLength = Math.max(displayName.length, maxNameLength);
+			}
 		}
+
+		addNames(cliNames);
 
 		for (const path of options.file || []) {
-			if (!fs.existsSync(path)) {
-				console.error('Input file does not exist: ' + path);
-				process.exit();
-			}
+			if (!fs.existsSync(path)) io.exit('Input file does not exist: ' + path);
 
 			const contents = fs.readFileSync(path, { encoding: 'utf8' });
-			const _names = contents.replaceAll('\n', ',').replaceAll(/\s/g, '').split(',');
-			for (const name of _names) {
-				displayNames.set(name.toLowerCase(), name);
-				names.push(name.toLowerCase());
-				maxNameLength = Math.max(name.length, maxNameLength);
-			}
+			const fileNames = contents.replaceAll('\n', ',').replaceAll(/\s/g, '').split(',');
+			addNames(fileNames);
 		}
-		names.sort();
+
+		const namesToCheck = new Set(displayNames.keys());
+
+		if (!namesToCheck.size) io.exit('No names specified');
+
+		if (!options.printOnly) console.log(`Checking availability of ${styleText('blueBright', namesToCheck.size.toString())} names...`);
 
 		const statusStyles = {
 			error: 'redBright',
@@ -294,51 +302,45 @@ cli.command('check-name')
 
 		type Status = keyof typeof statusStyles;
 
-		const duplicateNames = names.length - displayNames.size;
-
-		function printName(name: string, status: Status, statusCode?: number) {
+		function printName(name: string, status: Status, existing?: string) {
 			if (options.ignore.includes(status) || (options.printOnly && options.printOnly != status)) {
 				return;
 			}
 
+			if (options.printOnly) {
+				console.log(name);
+				return;
+			}
+
 			console.log(
-				options.printOnly
-					? name
-					: `${styleText('blueBright', name.padEnd(maxNameLength))}: ${styleText(statusStyles[status], status)} ${options.debug && statusCode ? `(${statusCode})` : ''}`
+				styleText('blueBright', name.padEnd(maxNameLength)) + ':',
+				styleText(statusStyles[status], status),
+				existing && existing !== name ? `(${styleText('cyan', existing)})` : ''
 			);
 		}
 
 		let checkedNames = new Set();
-		if (!options.printOnly) {
-			console.log(
-				`Checking availability of ${styleText('blueBright', names.length.toString())} names${duplicateNames > 0 ? ` (${styleText('blueBright', duplicateNames.toString())} duplicates) ` : ''}...`
-			);
-		}
-		for (const name of names) {
+		const cache = await replicate.getCache();
+		const normalizedNames = Object.create(null);
+
+		for (const id of Object.keys(cache.entries)) normalizedNames[normalize(id)] = id;
+
+		for (const name of namesToCheck) {
 			if (checkedNames.has(name)) {
 				printName(displayNames.get(name), 'duplicate');
 				continue;
 			}
 
-			try {
-				const res = await fetch('https://registry.npmjs.com/' + name);
+			const existing = normalizedNames[normalize(name)];
 
-				if (checkedNames.has(name)) {
-					printName(displayNames.get(name), 'duplicate');
-					continue;
-				}
-				const status: Status = res.status == 404 ? 'yes' : res.status == 200 ? 'no' : 'unknown';
-				printName(displayNames.get(name), status, res.status);
+			const displayName = displayNames.get(name);
 
-				checkedNames.add(name);
-			} catch (err) {
-				if (checkedNames.has(name)) {
-					printName(displayNames.get(name), 'duplicate');
-					continue;
-				}
-				printName(displayNames.get(name), 'error');
+			if (existing) {
+				printName(displayName, 'no', existing);
+			} else {
+				printName(displayName, 'yes');
 			}
 
-			if (checkedNames.size == displayNames.size) process.exit();
+			checkedNames.add(name);
 		}
 	});
