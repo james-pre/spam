@@ -19,14 +19,24 @@ export let diagnostics = {
 	retries: 0,
 };
 
-export async function apiRequest<T>(this: { retry?: number } | void, href: string, onWarning?: (message: string) => void): Promise<T> {
-	const url = new URL(href, 'https://api.npmjs.org/');
-	debug('GET', url.href);
+export async function apiRequest<T>(
+	this: { retry?: number; base?: string } | void,
+	method: 'GET' | 'POST' | 'PUT' | 'DELETE',
+	href: string,
+	body?: object,
+	onWarning?: (message: string) => void
+): Promise<T> {
+	const url = new URL(href, this?.base || 'https://api.npmjs.org/');
+	debug(method, url.href);
+	if (method == 'GET' && body) for (const [key, value] of Object.entries(body)) url.searchParams.set(key, JSON.stringify(value));
+
 	const res = await fetch(url, {
+		method,
 		headers: {
-			'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:1.0) npm-stats/1.0',
+			'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:1.0) spam/1.0',
 			Accept: 'application/json',
 		},
+		body: typeof body == 'undefined' || method == 'GET' ? undefined : JSON.stringify(body),
 	});
 
 	let { retry = 0 } = this || {};
@@ -36,7 +46,7 @@ export async function apiRequest<T>(this: { retry?: number } | void, href: strin
 		diagnostics.retries++;
 		// Exponential backoff
 		await wait(Math.pow(2, retry) * 1000);
-		return await apiRequest.call<{ retry: number }, any[], Promise<T>>({ retry }, href, onWarning);
+		return await apiRequest.call<{ retry: number }, any[], Promise<T>>({ retry }, method, href, onWarning);
 	}
 
 	if (!res.ok) throw res.statusText;
@@ -106,7 +116,7 @@ export interface PackageDownloadInfo {
 
 export async function getPackageDownloads(packageName: string, onWarning?: (message: string) => void): Promise<PackageDownloadInfo> {
 	const downloadsBefore = (day: string) =>
-		apiRequest<PackageDownloadInfo>(`/downloads/range/2015-01-10:${day}/${packageName}`, onWarning);
+		apiRequest<PackageDownloadInfo>('GET', `/downloads/range/2015-01-10:${day}/${packageName}`, undefined, onWarning);
 
 	const results = await downloadsBefore(today);
 	results.total = 0;
@@ -155,6 +165,7 @@ export async function getPackageDownloadsBulk(
 		const [start] = new Date(year - 1, month, day + 1).toISOString().split('T');
 		const [end] = new Date(year, month, day).toISOString().split('T');
 		const result = await apiRequest<Record<string, PackageDownloadInfo>>(
+			'GET',
 			`/downloads/range/${start}:${end}/${Array.from(remainingNames).join(',')}`,
 			onWarning
 		);
@@ -227,7 +238,7 @@ export async function searchNpm(query: string): Promise<SearchResultEntry[]> {
 	let from = 0;
 
 	do {
-		lastResult = await apiRequest<SearchResult>(`/search?text=${query}&size=250&from=${from}`);
+		lastResult = await apiRequest<SearchResult>('GET', `/search?text=${query}&size=250&from=${from}`);
 
 		results.push(...lastResult.objects);
 
@@ -266,6 +277,7 @@ export interface SearchResultEntry {
 }
 
 export interface PackageInfo {
+	_rev: string;
 	name: string;
 	keywords: string[];
 	version: string;

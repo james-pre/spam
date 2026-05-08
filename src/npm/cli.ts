@@ -189,6 +189,69 @@ cli.command('stats')
 		}
 	});
 
+const npm_db = cli.command('db').description('Manage the local npm database');
+
+npm_db
+	.command('status')
+	.description('Show local cache status')
+	.action(async () => {
+		const { doc_count, update_seq } = await replicate.getMetadata();
+
+		if (!fs.existsSync(replicate.cachePath)) {
+			console.log('No local cache.');
+			console.log(`Remote has ${num(doc_count)} entries and ${num(update_seq)} changes.`);
+			return;
+		}
+
+		const cache = await replicate.getCache();
+
+		const cachedEntries = Object.keys(cache.entries).length;
+		const diff = update_seq - cache.update_seq;
+		const isBehind = diff > 0;
+		const magnitude = Math.abs(diff);
+
+		console.log(num(cachedEntries), 'cached entries.');
+		console.log(
+			styleText(isBehind ? 'yellow' : 'cyan', magnitude.toString()),
+			'changes',
+			isBehind ? 'behind' : 'ahead',
+			`(cached ${num(cache.update_seq)}, remote ${num(update_seq)})`
+		);
+	});
+
+npm_db
+	.command('clean')
+	.description('Remove local npm database cache')
+	.action(() => {
+		if (replicate.removeCache()) console.log('Local npm cache removed');
+		else console.log('No local npm cache file found');
+	});
+
+npm_db
+	.command('update')
+	.alias('up')
+	.description('Download the latest npm database')
+	.action(async () => {
+		if (!fs.existsSync(replicate.cachePath)) {
+			await replicate.getCache();
+			return;
+		}
+
+		const applied = await replicate.update();
+		console.log('Applied', num(applied), 'changes.');
+	});
+
+npm_db
+	.command('show')
+	.description('Show cached rev for package id')
+	.argument('<id>', 'Package id')
+	.action(async id => {
+		const cache = await replicate.getCache();
+		const rev = cache.entries[id];
+		if (typeof rev === 'undefined') console.log('not found');
+		else console.log(rev);
+	});
+
 cli.command('check-name')
 	.argument('[names...]', 'Names to check')
 	.option('-f, --file <path...>', 'Path to a file containing npm package names')

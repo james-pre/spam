@@ -3,5 +3,12 @@
 import spam from './cli.js';
 import './npm/cli.js';
 import './scm/cli.js';
+import { done, exit } from 'ioium/node';
 
-await spam.parseAsync();
+try {
+	await spam.parseAsync();
+} catch (e) {
+	if (typeof e == 'number') process.exit(e);
+	done(true);
+	exit(e);
+}
