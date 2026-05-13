@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs';
 import type { Dependency } from '../dependency.js';
 import { getDependencies as getNPMDeps } from '../npm/lock.js';
-import dnf from './dnf.js';
+import dnf from '../package/managers/dnf.js';
 
 export async function* getGlobalDependencies(): AsyncGenerator<Dependency> {
 	if (existsSync('/usr/lib/package-lock.json')) yield* getNPMDeps('/usr/lib/package-lock.json');

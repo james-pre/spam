@@ -3,7 +3,7 @@
 	"version": "0.1.0",
 	"description": "Source and Package Administration/Management",
 	"bin": {
-		"spam": "./dist/main.js"
+		"spam": "./dist/cli/main.js"
 	},
 	"repository": {
 		"type": "git",

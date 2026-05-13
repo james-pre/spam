@@ -1,12 +1,12 @@
 import { program } from 'commander';
 import * as io from 'ioium/node';
-import $pkg from '../package.json' with { type: 'json' };
-import { config, defaultConfigPath, loadConfig } from './config.js';
-import { formatDep, formatDepSummary, type Dependency } from './dependency.js';
-import { getSourceRepoDependencies, shortSourceRepoString, type SCMPackageManager } from './scm/repo.js';
-import { runSCM } from './scm/scm.js';
-import { getGlobalDependencies } from './system/deps.js';
-import type { PackageManagerName } from './packages/manager.js';
+import $pkg from '../../package.json' with { type: 'json' };
+import { config, defaultConfigPath, loadConfig } from '../config.js';
+import { formatDep, formatDepSummary, type Dependency } from '../dependency.js';
+import { getSourceRepoDependencies, shortSourceRepoString, type SCMPackageManager } from '../scm/repo.js';
+import { runSCM } from '../scm/scm.js';
+import { getGlobalDependencies } from '../system/deps.js';
+import type { PackageManagerName } from '../package/manager.js';
 
 const spam = program
 	.name($pkg.name)

@@ -1,13 +1,11 @@
-import * as io from 'ioium/node';
-import { basename, join, relative, resolve } from 'node:path';
+import { existsSync } from 'node:fs';
+import { join, relative, resolve } from 'node:path';
 import { styleText } from 'node:util';
 import * as z from 'zod';
 import { config } from '../config.js';
+import type { Dependency } from '../dependency.js';
 import * as npm from '../npm/index.js';
 import { prettyPath } from './paths.js';
-import type { Dependency } from '../dependency.js';
-import semver from 'semver';
-import { existsSync } from 'node:fs';
 
 export const scmTools = ['git'] as const;
 

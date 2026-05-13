@@ -2,11 +2,11 @@ import * as io from 'ioium/node';
 import * as fs from 'node:fs';
 import { createWriteStream } from 'node:fs';
 import { styleText } from 'node:util';
-import spam from '../cli.js';
-import * as api from './api.js';
-import { createGraph } from './deps.js';
-import { PackageLock } from './lock.js';
-import * as replicate from './replicate.js';
+import spam from './common.js';
+import * as api from '../npm/api.js';
+import { createGraph } from '../npm/deps.js';
+import { PackageLock } from '../npm/lock.js';
+import * as replicate from '../npm/replicate.js';
 
 const num = (n: number) => styleText('blueBright', n.toString());
 

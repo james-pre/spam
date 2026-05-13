@@ -1,5 +1,5 @@
 import { styleText } from 'node:util';
-import { pmColors, type PackageManagerName } from './packages/manager.js';
+import { pmColors, type PackageManagerName } from './package/manager.js';
 
 export interface Dependency {
 	from: PackageManagerName;

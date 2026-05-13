@@ -2,11 +2,11 @@ import * as io from 'ioium/node';
 import * as fs from 'node:fs';
 import { basename, resolve } from 'node:path';
 import { styleText } from 'node:util';
-import spam from '../cli.js';
+import spam from './common.js';
 import { config, saveConfig } from '../config.js';
-import { prettyPath, resolvePaths } from './paths.js';
-import { runSCM } from './scm.js';
-import { formatSourceRepo, resolveSourceRepos, shortSourceRepoString, type SCMPackageManager } from './repo.js';
+import { prettyPath, resolvePaths } from '../scm/paths.js';
+import { runSCM } from '../scm/scm.js';
+import { formatSourceRepo, resolveSourceRepos, shortSourceRepoString, type SCMPackageManager } from '../scm/repo.js';
 
 const scm = spam
 	.command('scm')

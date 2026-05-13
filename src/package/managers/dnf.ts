@@ -1,5 +1,5 @@
 import * as dnf5 from 'libdnf';
-import type { PackageManager } from '../packages/index.js';
+import type { PackageManager } from '../index.js';
 
 export default {
 	name: 'dnf',
