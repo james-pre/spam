@@ -6,7 +6,7 @@ import { formatDep, formatDepSummary, type Dependency } from '../dependency.js';
 import { getSourceRepoDependencies, shortSourceRepoString, type SCMPackageManager } from '../scm/repo.js';
 import { runSCM } from '../scm/scm.js';
 import { getGlobalDependencies } from '../system/deps.js';
-import type { PackageManagerName } from '../package/manager.js';
+import type { ManagerName } from '../package/manager.js';
 
 const spam = program
 	.name($pkg.name)
@@ -45,7 +45,7 @@ spam.command('ls')
 			const deps = getSourceRepoDependencies(repo);
 
 			if (options.summary) {
-				console.log(scm, path + ':', formatDepSummary(deps, options.manager as PackageManagerName[]));
+				console.log(scm, path + ':', formatDepSummary(deps, options.manager as ManagerName[]));
 			} else {
 				console.log(scm, path + ':');
 				for (const dep of deps) if (shouldShow(dep)) console.log(formatDep(dep));
@@ -55,7 +55,7 @@ spam.command('ls')
 		const globalDeps = await Array.fromAsync(getGlobalDependencies());
 
 		if (options.summary) {
-			console.log('<global>:', formatDepSummary(globalDeps, options.manager as PackageManagerName[]));
+			console.log('<global>:', formatDepSummary(globalDeps, options.manager as ManagerName[]));
 		} else {
 			console.log('<global>:');
 			for (const dep of globalDeps) if (shouldShow(dep)) console.log(formatDep(dep));

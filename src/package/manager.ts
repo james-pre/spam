@@ -1,23 +1,21 @@
-import type { Package, PackageQueryFilter, Transaction, TransactionInit } from 'libdnf';
+import type { Transaction, TransactionInit } from 'libdnf';
 import type { InspectColor } from 'node:util';
+import * as managers from './managers/index.js';
+import type { Package } from './package.js';
+import type { QueryFilter } from './query.js';
 
-export const packageManagers = ['dnf', 'npm', 'yarn'] as const;
+export type ManagerName = keyof typeof managers;
 
-export type PackageManagerName = (typeof packageManagers)[number];
+export const managerNames = Object.keys(managers) as ManagerName[];
 
-export const pmColors = {
-	dnf: 'blue',
-	npm: 'red',
-	yarn: 'red',
-} satisfies Record<PackageManagerName, InspectColor>;
-
-export interface PackageManager {
+export interface Manager {
 	name: string;
+	color: InspectColor;
 
 	/** Load the repositories/registries/etc. */
 	load(): Promise<void>;
 
-	query(...filters: PackageQueryFilter[]): Promise<Package[]>;
+	query(...filters: QueryFilter[]): Promise<Package[]>;
 
 	transaction(init: TransactionInit): Promise<Transaction>;
 }

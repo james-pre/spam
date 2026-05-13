@@ -1,22 +1,22 @@
 import { styleText } from 'node:util';
-import { pmColors, type PackageManagerName } from './package/manager.js';
+import * as pkg from './package/index.js';
 
 export interface Dependency {
-	from: PackageManagerName;
+	from: pkg.ManagerName;
 	name: string;
 	version: string;
 	isDirect: boolean;
 }
 
 export function formatDep(dep: Dependency) {
-	return `- ${styleText(pmColors[dep.from], dep.from)}/${dep.name} ${styleText('dim', dep.version ? 'v' + dep.version : '(unknown version)')} ${dep.isDirect ? '[direct]' : '[transitive]'}`;
+	return `- ${styleText(pkg.managers[dep.from].color, dep.from)}/${dep.name} ${styleText('dim', dep.version ? 'v' + dep.version : '(unknown version)')} ${dep.isDirect ? '[direct]' : '[transitive]'}`;
 }
 
-export function formatDepSummary(deps: Iterable<Dependency>, packageManagers?: PackageManagerName[]) {
+export function formatDepSummary(deps: Iterable<Dependency>, packageManagers?: pkg.ManagerName[]) {
 	return (
-		(Object.entries(Object.groupBy(deps, dep => dep.from)) as [PackageManagerName, Dependency[]][])
+		(Object.entries(Object.groupBy(deps, dep => dep.from)) as [pkg.ManagerName, Dependency[]][])
 			.filter(([from]) => !packageManagers || packageManagers.includes(from))
-			.map(([from, dependencies]) => `${dependencies.length} ${styleText(pmColors[from], from)}`)
+			.map(([from, dependencies]) => `${dependencies.length} ${styleText(pkg.managers[from].color, from)}`)
 			.join(', ') || styleText('dim', '(no dependencies)')
 	);
 }
