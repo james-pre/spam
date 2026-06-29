@@ -2,7 +2,6 @@ import { warn } from 'ioium/node';
 import * as fs from 'node:fs';
 import { homedir } from 'node:os';
 import { join, resolve } from 'node:path';
-import { config } from '../config.js';
 
 export function prettyPath(path: string) {
 	if (path.startsWith(homedir())) {

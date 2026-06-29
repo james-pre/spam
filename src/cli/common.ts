@@ -3,8 +3,8 @@ import * as io from 'ioium/node';
 import $pkg from '../../package.json' with { type: 'json' };
 import { config, defaultConfigPath, loadConfig } from '../config.js';
 import { formatDep, formatDepSummary, type Dependency } from '../dependency.js';
-import { getSourceRepoDependencies, shortSourceRepoString, type SCMPackageManager } from '../scm/repo.js';
-import { runSCM } from '../scm/scm.js';
+import { getSourceRepoDependencies, shortSourceRepoString, type PackageManager } from '../scm/repo.js';
+import * as scm from '../scm/scm.js';
 import { getGlobalDependencies } from '../system/deps.js';
 import type { ManagerName } from '../package/manager.js';
 
@@ -24,7 +24,7 @@ spam.hook('preAction', cmd => {
 spam.command('pull')
 	.description('Pull changes from all managed repositories')
 	.action(async function spam_pull() {
-		await runSCM({ concurrency: 4, args: { git: ['pull', '--progress'] } });
+		await scm.run({ concurrency: 4, args: { git: ['pull', '--progress'] } });
 	});
 
 spam.command('ls')

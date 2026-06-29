@@ -2,10 +2,10 @@ import * as io from 'ioium/node';
 import { styleText } from 'node:util';
 import { config } from '../config.js';
 import { prettyPath } from './paths.js';
-import type { SCM } from './repo.js';
+import type { Tool } from './repo.js';
 
-export interface ScmOptions {
-	args: Record<SCM, string[]>;
+export interface Options {
+	args: Record<Tool, string[]>;
 	opName?: string;
 	opIng?: string;
 	jobSuccess?: string;
@@ -13,7 +13,7 @@ export interface ScmOptions {
 	concurrency: number;
 }
 
-export async function runSCM(options: ScmOptions) {
+export async function run(options: Options) {
 	if (!config.repos.length) {
 		io.warn('No repositories configured.');
 		return;

@@ -2,9 +2,8 @@
 	"name": "spam-cli",
 	"version": "0.1.0",
 	"description": "Source and Package Administration/Management",
-	"bin": {
-		"spam": "./dist/cli/main.js"
-	},
+	"author": "James Prevett <jp@jamespre.dev>",
+	"license": "GPL-3.0-or-later",
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/james-pre/spam.git"
@@ -13,10 +12,15 @@
 		"utility"
 	],
 	"type": "module",
-	"author": "James Prevett <jp@jamespre.dev>",
-	"license": "GPL-3.0-or-later",
 	"bugs": {
 		"url": "https://github.com/james-pre/spam/issues"
+	},
+	"bin": {
+		"spam": "./dist/cli/main.js"
+	},
+	"exports": {
+		".": "./dist/index.js",
+		"./*": "./dist/*.js"
 	},
 	"files": [
 		"dist",

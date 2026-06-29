@@ -7,19 +7,19 @@ import type { Dependency } from '../dependency.js';
 import * as npm from '../npm/index.js';
 import { prettyPath } from './paths.js';
 
-export const scmTools = ['git'] as const;
+export const tools = ['git'] as const;
 
-export type SCM = (typeof scmTools)[number];
+export type Tool = (typeof tools)[number];
 
-export const scmPackageManagers = ['npm', 'yarn'] as const;
+export const packageManagers = ['npm', 'yarn'] as const;
 
-export type SCMPackageManager = (typeof scmPackageManagers)[number];
+export type PackageManager = (typeof packageManagers)[number];
 
 export const SourceRepository = z.object({
 	path: z.string(),
 	name: z.string().nullish(),
-	scm: z.literal(scmTools),
-	packageManagers: z.literal(scmPackageManagers).array(),
+	scm: z.literal(tools),
+	packageManagers: z.literal(packageManagers).array(),
 });
 export interface SourceRepository extends z.infer<typeof SourceRepository> {}
 

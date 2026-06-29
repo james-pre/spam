@@ -12,7 +12,7 @@
  */
 
 import type * as pkg from './package/manager.js';
-import type { SCM } from './scm/repo.js';
+import type * as scm from './scm/repo.js';
 
 export type Type = 'system' | 'user' | 'local';
 
@@ -33,7 +33,7 @@ export interface Location {
 	 * Local locations should have source control.
 	 * (they don't have to though)
 	 */
-	sourceManager?: SCM;
+	sourceManager?: scm.Tool;
 }
 
 export function detect() {}

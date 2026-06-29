@@ -5,8 +5,8 @@ import { styleText } from 'node:util';
 import spam from './common.js';
 import { config, saveConfig } from '../config.js';
 import { prettyPath, resolvePaths } from '../scm/paths.js';
-import { runSCM } from '../scm/scm.js';
-import { formatSourceRepo, resolveSourceRepos, shortSourceRepoString, type SCMPackageManager } from '../scm/repo.js';
+import { run as runSCM } from '../scm/scm.js';
+import { formatSourceRepo, resolveSourceRepos, shortSourceRepoString, type PackageManager } from '../scm/repo.js';
 
 const scm = spam
 	.command('scm')
@@ -70,7 +70,7 @@ scm.command('add')
 				continue;
 			}
 
-			const packages: SCMPackageManager[] = [];
+			const packages: PackageManager[] = [];
 
 			if (dir.includes('package.json')) packages.push('npm');
 			if (dir.includes('yarn.lock')) packages.push('yarn');
