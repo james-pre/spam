@@ -36,7 +36,7 @@
 		"@types/semver": "^7.7.1",
 		"commander": "^14.0.0",
 		"ioium": "^1.0.0",
-		"libdnf": "^0.2.3",
+		"libdnf": "^0.3.0",
 		"semver": "^7.7.4",
 		"zod": "^4.3.6"
 	},
