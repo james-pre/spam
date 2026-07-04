@@ -25,7 +25,7 @@ export interface PackageLockEntry extends z.infer<typeof PackageLockEntry> {}
 export const PackageLock = z.object({
 	name: z.string(),
 	version: z.string().nullish(),
-	lockfileVersion: z.literal([2, 3]),
+	lockfileVersion: z.int().positive(),
 	requires: z.boolean().optional(),
 	packages: z.record(z.string(), PackageLockEntry),
 });
