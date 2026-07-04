@@ -7,3 +7,5 @@ dist
 !.vscode
 !.gitignore
 !.prettierignore
+native
+girbind

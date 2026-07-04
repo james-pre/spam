@@ -1,8 +1,7 @@
 import * as io from 'ioium/node';
 import { basename } from 'node:path';
-import semver from 'semver';
 import * as z from 'zod';
-import type { Dependency } from '../dependency.js';
+import type { Package } from '../package/package.js';
 
 export const PackageLockEntry = z
 	.object({
@@ -32,7 +31,7 @@ export const PackageLock = z.object({
 });
 export interface PackageLock extends z.infer<typeof PackageLock> {}
 
-export function* getDependencies(lockFilePath: string): Generator<Dependency> {
+export function* parseLockFile(lockFilePath: string): Generator<Package> {
 	let lock: PackageLock;
 	try {
 		lock = io.readJSON(lockFilePath, PackageLock);
@@ -40,15 +39,27 @@ export function* getDependencies(lockFilePath: string): Generator<Dependency> {
 		throw new Error(`Could not parse ${lockFilePath}: ${io.errorText(e)}`);
 	}
 
-	const direct = lock.packages[''].dependencies || {};
+	const byName: Record<string, PackageLockEntry> = {};
 
 	for (const [relPath, pkg] of Object.entries(lock.packages)) {
 		const name = pkg.name || (relPath.includes('node_modules/') ? relPath.split('node_modules/').at(-1)! : basename(relPath));
+		pkg.name ||= name;
+		byName[name] = pkg;
+	}
+
+	for (const pkg of Object.values(lock.packages)) {
 		yield {
-			from: 'npm',
-			name,
-			version: pkg.version || '*',
-			isDirect: name in direct && semver.satisfies(pkg.version || '*', direct[name] || '*'),
+			version: '???',
+			name: pkg.name!,
+			...pkg,
+			dependencies: Object.entries(pkg.dependencies || {}).map(([name, version]) => ({
+				name,
+				version,
+				hash: byName[name]?.integrity,
+			})),
+			conflicts: [],
+			/** @todo */
+			installSize: 0n,
 		};
 	}
 }

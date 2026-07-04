@@ -2,11 +2,12 @@ import * as io from 'ioium/node';
 import * as fs from 'node:fs';
 import { basename, resolve } from 'node:path';
 import { styleText } from 'node:util';
-import spam from './common.js';
 import { config, saveConfig } from '../config.js';
+import type { PackageManagerName } from '../package/manager.js';
 import { prettyPath, resolvePaths } from '../scm/paths.js';
+import { formatSourceRepo, resolveSourceRepos, shortSourceRepoString } from '../scm/repo.js';
 import { run as runSCM } from '../scm/scm.js';
-import { formatSourceRepo, resolveSourceRepos, shortSourceRepoString, type PackageManager } from '../scm/repo.js';
+import spam from './common.js';
 
 const scm = spam
 	.command('scm')
@@ -70,10 +71,10 @@ scm.command('add')
 				continue;
 			}
 
-			const packages: PackageManager[] = [];
+			const packages: PackageManagerName[] = [];
 
 			if (dir.includes('package.json')) packages.push('npm');
-			if (dir.includes('yarn.lock')) packages.push('yarn');
+			// if (dir.includes('yarn.lock')) packages.push('yarn');
 
 			config.repos.push({ path: resolve(path), scm: 'git', packageManagers: packages, name: basename(path) });
 			console.log(styleText('green', '+ ' + prettyPath(path)));

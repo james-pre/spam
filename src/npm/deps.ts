@@ -1,4 +1,4 @@
-import type { PackageLock } from './lock.js';
+import type { PackageLock } from './package-json.js';
 
 export interface CreateGraphOptions {
 	includeVersions?: boolean;

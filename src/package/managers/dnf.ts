@@ -1,5 +1,6 @@
 import * as dnf5 from 'libdnf';
-import type { Manager, QueryFilter } from '../index.js';
+import type { PackageManager } from '../manager.js';
+import type { QueryFilter } from '../query.js';
 
 function convertFilters(filters: QueryFilter[]): dnf5.PackageQueryFilter[] {
 	return filters.map(f =>
@@ -18,40 +19,16 @@ function convertFilters(filters: QueryFilter[]): dnf5.PackageQueryFilter[] {
 
 export default {
 	name: 'dnf',
-	color: 'blue',
-	load() {
-		return new Promise((resolve, reject) => {
-			try {
-				dnf5.loadRepos();
-				resolve();
-			} catch (e) {
-				reject(e);
-			}
-		});
+	async load(options?: dnf5.LoadReposOptions) {
+		dnf5.loadRepos(options);
 	},
-	query(...filters) {
-		return new Promise((resolve, reject) => {
-			try {
-				const result = dnf5.query(...convertFilters(filters));
-				resolve(
-					result.map(pkg => ({
-						...pkg,
-						dependencies: pkg.requires,
-					}))
-				);
-			} catch (e) {
-				reject(e);
-			}
-		});
+	async query(...filters) {
+		return dnf5.query(...convertFilters(filters)).map(pkg => ({
+			...pkg,
+			dependencies: pkg.requires,
+		}));
 	},
-	transaction(init) {
-		return new Promise((resolve, reject) => {
-			try {
-				const result = dnf5.transaction(init);
-				resolve(result);
-			} catch (e) {
-				reject(e);
-			}
-		});
+	async transaction(init) {
+		return new dnf5.Transaction(init);
 	},
-} satisfies Manager;
+} satisfies PackageManager;

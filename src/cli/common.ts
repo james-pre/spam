@@ -2,11 +2,12 @@ import { program } from 'commander';
 import * as io from 'ioium/node';
 import $pkg from '../../package.json' with { type: 'json' };
 import { config, defaultConfigPath, loadConfig } from '../config.js';
-import { formatDep, formatDepSummary, type Dependency } from '../dependency.js';
-import { getSourceRepoDependencies, shortSourceRepoString, type PackageManager } from '../scm/repo.js';
+import type { PackageManagerName } from '../package/manager.js';
+import { formatPackage, formatPackageSummary } from '../package/package.js';
+import { getSourceRepoPackages, shortSourceRepoString } from '../scm/repo.js';
 import * as scm from '../scm/scm.js';
-import { getGlobalDependencies } from '../system/deps.js';
-import type { ManagerName } from '../package/manager.js';
+import { system } from '../system/scope.js';
+import { getPackages } from '../scope.js';
 
 const spam = program
 	.name($pkg.name)
@@ -31,34 +32,37 @@ spam.command('ls')
 	.description('List packages and managed repositories')
 	.option('-x, --no-summary', 'Actually list out every package instead of a summary')
 	.option('-m, --manager <pm...>', 'Filter by package manager')
-	.option('--direct', 'Only show direct dependencies when used with --no-summary')
+	.option('-s, --scope <type...>', 'Filter by scope type')
+	.option('-q, --quiet', 'Hide some output, e.g. manager failures')
 	.action(async function (options) {
-		const shouldShow = (dep: Dependency) => {
-			if (options.direct && !dep.isDirect) return false;
-			if (options.manager && !options.manager.includes(dep.from)) return false;
-			return true;
-		};
+		if (!options.scope || options.scope.includes('local'))
+			for (const repo of config.repos) {
+				const [scm, path] = shortSourceRepoString(repo);
 
-		for (const repo of config.repos) {
-			const [scm, path] = shortSourceRepoString(repo);
+				const pkgs = getSourceRepoPackages(repo);
 
-			const deps = getSourceRepoDependencies(repo);
-
-			if (options.summary) {
-				console.log(scm, path + ':', formatDepSummary(deps, options.manager as ManagerName[]));
-			} else {
-				console.log(scm, path + ':');
-				for (const dep of deps) if (shouldShow(dep)) console.log(formatDep(dep));
+				if (options.summary) {
+					console.log(scm, path + ':', formatPackageSummary(pkgs, options.manager as PackageManagerName[]));
+				} else {
+					console.log(scm, path + ':');
+					for (const pkg of pkgs) if (!options.manager || options.manager.includes(pkg.from)) console.log(formatPackage(pkg));
+				}
 			}
-		}
 
-		const globalDeps = await Array.fromAsync(getGlobalDependencies());
+		const globalPkgs = await Array.fromAsync(
+			getPackages(system, {
+				onManagerFail(manager, err) {
+					if (options.quiet) return;
+					io.warn(manager, 'failed:', err);
+				},
+			})
+		);
 
 		if (options.summary) {
-			console.log('<global>:', formatDepSummary(globalDeps, options.manager as ManagerName[]));
+			console.log('<global>:', formatPackageSummary(globalPkgs, options.manager as PackageManagerName[]));
 		} else {
 			console.log('<global>:');
-			for (const dep of globalDeps) if (shouldShow(dep)) console.log(formatDep(dep));
+			for (const pkg of globalPkgs) if (!options.manager || options.manager.includes(pkg.from)) console.log(formatPackage(pkg));
 		}
 	});
 
