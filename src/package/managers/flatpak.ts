@@ -2,6 +2,8 @@ import type { PackageManager } from '../manager.js';
 import * as flatpak from '../../../native/flatpak.js';
 import * as io from 'ioium/node';
 import type { Package } from '../package.js';
+import type { Transaction, TransactionInit, TransactionPackage, TransactionRunOptions } from '../transaction.js';
+import type { TransactionDownloadOptions } from 'libdnf';
 
 let installation: flatpak.Installation;
 
@@ -30,7 +32,36 @@ function installedRefToPackage(ref: flatpak.InstalledRef): PackageFlatpak {
 	};
 }
 
-export const name = 'flatpak';
+export class FlatpakTransaction implements Transaction {
+	protected tx = new flatpak.Transaction(installation);
+
+	constructor(public readonly init: TransactionInit) {}
+
+	get packages(): TransactionPackage[] {
+
+	}
+	
+	get brokenDependencyPackages(): Package[] {
+
+	}
+
+	get conflictingPackages(): Package[] {
+
+	}
+
+	get isEmpty(): boolean {
+
+	}
+
+	download(options?: TransactionDownloadOptions): void | Promise<void> {
+		
+	}
+
+	run(options?: TransactionRunOptions): void | Promise<void> {
+		
+	}
+
+}
 
 export default {
 	name: 'flatpak',
@@ -54,7 +85,7 @@ export default {
 	async transaction(init) {
 		if (!installation) throw new Error('Flatpak manager not initialized');
 
-		const tx = new flatpak.Transaction(installation);
+		const tx = new FlatpakTransaction(init);
 
 		throw new Error('Transactions still WIP for flatpak');
 	},

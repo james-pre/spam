@@ -1,4 +1,4 @@
-import type { TransactionInit, Transaction } from 'libdnf';
+import type { TransactionInit, Transaction } from '../transaction.js';
 import type { PackageManager } from '../manager.js';
 import type { QueryFilter } from '../query.js';
 import { execFileSync } from 'node:child_process';

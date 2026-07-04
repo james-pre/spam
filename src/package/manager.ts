@@ -1,4 +1,4 @@
-import type { Transaction, TransactionInit } from 'libdnf';
+import type { Transaction, TransactionInit } from './transaction.js';
 import type { InspectColor } from 'node:util';
 import type { Package } from './package.js';
 import type { QueryFilter } from './query.js';
