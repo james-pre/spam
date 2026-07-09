@@ -29,7 +29,15 @@ export function* resolveRecursive(ctx: ResolveContext, path: string): Generator<
 
 export function* resolvePaths(args: string[], recursive: boolean = false): Generator<string> {
 	const ctx: ResolveContext = { seen: new Set() };
-	for (const path of args.flatMap(p => fs.globSync(p))) {
+
+	const paths: string[] = [];
+
+	for (let arg of args) {
+		if (arg.startsWith('~')) arg = arg.replace('~', homedir());
+		paths.push(...fs.globSync(arg));
+	}
+
+	for (const path of paths) {
 		const stats = fs.statSync(path);
 		if (!stats.isDirectory()) {
 			warn('Not a directory:', path);
