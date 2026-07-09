@@ -41,6 +41,8 @@ spam.command('ls')
 
 				const pkgs = getSourceRepoPackages(repo);
 
+				if (options.manager && !pkgs.some(pkg => options.manager?.includes(pkg.from))) continue;
+
 				if (options.summary) {
 					console.log(scm, path + ':', formatPackageSummary(pkgs, options.manager as PackageManagerName[]));
 				} else {
