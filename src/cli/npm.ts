@@ -14,7 +14,7 @@ const cli = spam.command('npm').alias('node');
 
 cli.command('graph')
 	.option('-i, --input <path>', 'Path to the input package-lock.json file', 'package-lock.json')
-	.option('-o, --output <path>', 'Path to the output DOT file', '/proc/self/fd/1')
+	.option('-o, --output <path>', 'Path to the output DOT file', '-')
 	.option('-v, --include-versions', 'Include package versions in the graph')
 	.option('-D, --dev-dependencies', 'Include devDependencies in the graph')
 	.action(options => {
@@ -25,13 +25,13 @@ cli.command('graph')
 			io.exit('Invalid package-lock.json file', 1);
 		}
 
-		const stream = createWriteStream(options.output);
+		const stream = options.output == '-' ? process.stdout : createWriteStream(options.output).on('error', io.error);
 
 		for (const part of createGraph(lock, options)) {
 			stream.write(part);
 		}
 
-		stream.close();
+		if (stream !== process.stdout) (stream as fs.WriteStream).end().close();
 	});
 
 cli.command('stats')
