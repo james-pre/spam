@@ -28,6 +28,7 @@
 		"LICENSE.md"
 	],
 	"scripts": {
+		"install": "girbind build",
 		"prepublishOnly": "tsc -b",
 		"build": "tsc -b"
 	},
