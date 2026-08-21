@@ -15,7 +15,7 @@ const cli = spam.command('npm').alias('node');
 cli.command('graph')
 	.option('-i, --input <path>', 'Path to the input package-lock.json file', 'package-lock.json')
 	.option('-o, --output <path>', 'Path to the output DOT file', '/proc/self/fd/1')
-	.option('-V, --include-versions', 'Include package versions in the graph')
+	.option('-v, --include-versions', 'Include package versions in the graph')
 	.option('-D, --dev-dependencies', 'Include devDependencies in the graph')
 	.action(options => {
 		let lock: PackageLock;
@@ -35,8 +35,6 @@ cli.command('graph')
 	});
 
 cli.command('stats')
-	.option('-v, --verbose', 'Enable verbose output')
-	.option('--debug', 'Show debugging info, including API requests')
 	.option('-p, --package <name...>', 'Get stats for packages with the given name', [] as string[])
 	.option('-a, --author <name...>', 'Get stats for packages maintained by the given author', [] as string[])
 	.option('-q, --quiet', 'Suppress output')
@@ -46,7 +44,9 @@ cli.command('stats')
 	.option('-s, --sum-downloads', 'Show total downloads for all packages', false)
 	.option('-e, --extra', 'Show extra stats like download rates')
 	.option('-D, --diagnostics', 'Show diagnostic information')
-	.action(async opts => {
+	.action(async function spam_npm_stats() {
+		const opts = this.optsWithGlobals();
+
 		const isSinglePackage = !opts.author?.length && opts.package?.length == 1;
 
 		if (isSinglePackage) {
@@ -101,7 +101,7 @@ cli.command('stats')
 		}
 
 		function onWarning(message: string) {
-			if (!opts.verbose) return;
+			if (!opts.debug) return;
 			console.warn(styleText('yellow', 'Warning:'), message);
 		}
 
@@ -115,7 +115,7 @@ cli.command('stats')
 			const start = performance.now();
 			const info = await api
 				.getPackageDownloadsBulk(unscopedNames, onWarning)
-				.catch(e => io.exit(`Error fetching bulk data: ${opts.verbose && e instanceof Error ? e.stack : e}`));
+				.catch(e => io.exit(`Error fetching bulk data: ${opts.debug && e instanceof Error ? e.stack : e}`));
 
 			sum += info.total;
 
@@ -136,7 +136,7 @@ cli.command('stats')
 			try {
 				info = await api.getPackageDownloads(name, onWarning);
 			} catch (e) {
-				io.error(`Error fetching data for package "${name}": ${opts.verbose && e instanceof Error ? e.stack : e}`);
+				io.error(`Error fetching data for package "${name}": ${opts.debug && e instanceof Error ? e.stack : e}`);
 				continue;
 			}
 
