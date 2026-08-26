@@ -166,7 +166,9 @@ export async function getPackageDownloadsBulk(
 		const [end] = new Date(year, month, day).toISOString().split('T');
 		const result = await apiRequest<Record<string, PackageDownloadInfo>>(
 			'GET',
-			`/downloads/range/${start}:${end}/${Array.from(remainingNames).join(',')}`,
+			`/downloads/range/${start}:${end}/${Array.from(remainingNames)
+				.map(name => name + ',')
+				.join('')}`,
 			onWarning
 		);
 		year--;
