@@ -17,6 +17,7 @@ cli.command('graph')
 	.option('-o, --output <path>', 'Path to the output DOT file', '-')
 	.option('-v, --include-versions', 'Include package versions in the graph')
 	.option('-D, --dev-dependencies', 'Include devDependencies in the graph')
+	.option('-R, --root-only', 'Only graph the root package, do not include workspaces')
 	.action(options => {
 		let lock: PackageLock;
 		try {

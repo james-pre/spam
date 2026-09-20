@@ -1,8 +1,10 @@
+import { matchesGlob } from 'node:path';
 import type { PackageLock } from './package-json.js';
 
 export interface CreateGraphOptions {
 	includeVersions?: boolean;
 	devDependencies?: boolean;
+	rootOnly?: boolean;
 }
 
 const graphHeader = `digraph {
@@ -23,17 +25,22 @@ export function* createGraph(lock: PackageLock, options: CreateGraphOptions): Ge
 	function resolve(from: string, dep: string): string | undefined {
 		for (let dir = from; ; ) {
 			const path = (dir ? dir + '/' : '') + 'node_modules/' + dep;
-			if (path in lock.packages) return path;
+			const data = lock.packages[path];
+
+			if (data) return data.link && data.resolved ? data.resolved : path;
 
 			const i = dir.lastIndexOf('node_modules/');
-			if (i == -1) return;
-			dir = dir.slice(0, Math.max(i - 1, 0));
+			if (i == -1) {
+				if (!dir) return;
+				dir = '';
+			} else dir = dir.slice(0, Math.max(i - 1, 0));
 		}
 	}
 
 	function display_name(path: string) {
 		const data = lock.packages[path];
-		const name = data?.name || (path ? path.slice(path.lastIndexOf('node_modules/') + 'node_modules/'.length) : lock.name);
+		const i = path.lastIndexOf('node_modules/');
+		const name = data?.name || (!path ? lock.name : path.slice(i == -1 ? path.lastIndexOf('/') + 1 : i + 'node_modules/'.length));
 		const version = data?.version || (path ? '' : lock.version);
 		return JSON.stringify(options.includeVersions && version ? `${name}@${version}` : name);
 	}
@@ -41,11 +48,11 @@ export function* createGraph(lock: PackageLock, options: CreateGraphOptions): Ge
 	function* add_dependencies(
 		from: string,
 		display: string,
-		dependencies: Record<string, string> = {},
+		dependencies: Record<string, string> | string[] = {},
 		attributes = ''
 	): Generator<string> {
 		const deps = [];
-		for (const dep of Object.keys(dependencies)) {
+		for (const dep of Array.isArray(dependencies) ? dependencies : Object.keys(dependencies)) {
 			const path = resolve(from, dep);
 			if (path === undefined) {
 				deps.push(JSON.stringify(dep));
@@ -69,12 +76,21 @@ export function* createGraph(lock: PackageLock, options: CreateGraphOptions): Ge
 
 		yield* add_dependencies(path, display, data.dependencies);
 
-		if (!options.devDependencies || path) return;
+		if (path) return;
 
-		yield* add_dependencies(path, display, data.devDependencies, '[style=dashed]');
+		if (!options.rootOnly && data.workspaces) {
+			const workspaces = Object.entries(lock.packages)
+				.filter(([name]) => name && data.workspaces!.some(pattern => matchesGlob(name, pattern)))
+				.map(([, pkg]) => pkg.name!);
+
+			yield* add_dependencies(path, display, workspaces, '[style=dotted]');
+		}
+
+		if (options.devDependencies) {
+			yield* add_dependencies(path, display, data.devDependencies, '[style=dashed]');
+		}
 	}
 
-	// Start with the root package
 	yield* add_package('');
 
 	yield '}\n';
