@@ -30,7 +30,9 @@
 	"scripts": {
 		"install": "girbind build",
 		"prepublishOnly": "tsc -b",
-		"build": "tsc -b"
+		"build": "tsc -b",
+		"format": "prettier --write .",
+		"format:check": "prettier --check ."
 	},
 	"homepage": "https://github.com/james-pre/spam#readme",
 	"devDependencies": {
