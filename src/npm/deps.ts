@@ -23,7 +23,7 @@ export function* createGraph(lock: PackageLock, options: CreateGraphOptions): Ge
 	const added = new Set<string>();
 
 	function resolve(from: string, dep: string): string | undefined {
-		for (let dir = from; ; ) {
+		for (let dir = from; ;) {
 			const path = (dir ? dir + '/' : '') + 'node_modules/' + dep;
 			const data = lock.packages[path];
 
