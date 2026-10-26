@@ -49,7 +49,7 @@ export async function apiRequest<T>(
 		return await apiRequest.call<{ retry: number }, any[], Promise<T>>({ retry }, method, href, onWarning);
 	}
 
-	if (!res.ok) throw res.statusText;
+	if (!res.ok) throw res.statusText || `unknown error (${res.status})`;
 
 	diagnostics.requests++;
 	return await res.json();
